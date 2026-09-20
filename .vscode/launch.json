@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "MainGameLoop (module)",
+      "request": "launch",
+      "mainClass": "GameEngine/tester.MainGameLoop",
+      "projectName": "GameEngine",
+      "vmArgs": "-Dorg.lwjgl.librarypath=${workspaceFolder}/lib/natives -Djava.library.path=${workspaceFolder}/lib/natives"
+    },
+    {
+      "type": "java",
+      "name": "MainGameLoop (classpath fallback)",
+      "request": "launch",
+      "mainClass": "tester.MainGameLoop",
+      "projectName": "GameEngine",
+      "modulePaths": [],
+      "classPaths": [
+        "${workspaceFolder}/bin",
+        "${workspaceFolder}/lib/jars/lwjgl.jar",
+        "${workspaceFolder}/lib/jars/lwjgl-glfw.jar",
+        "${workspaceFolder}/lib/jars/lwjgl-opengl.jar",
+        "${workspaceFolder}/lib/jars/lwjgl-stb.jar",
+        "${workspaceFolder}/lib/jars/joml-1.10.8.jar"
+      ],
+      "vmArgs": "-Dorg.lwjgl.librarypath=${workspaceFolder}/lib/natives -Djava.library.path=${workspaceFolder}/lib/natives"
+    }
+  ]
+}
