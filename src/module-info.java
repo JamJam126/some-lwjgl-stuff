@@ -1,10 +1,4 @@
-/**
- * 
- */
-/**
- * 
- */
-module GameEngine {
+module SomeLwjglStuff {
 	requires org.lwjgl.glfw;
 	requires org.lwjgl.opengl;
 	requires java.desktop;

@@ -14,16 +14,14 @@ import toolbox.Maths;
 
 public class Renderer {
 
-	private static final float FOV = 70;          // vertical field of view, in degrees
-	private static final float NEAR_PLANE = 0.1f;  // closest visible distance
-	private static final float FAR_PLANE = 1000f;  // farthest visible distance
+	private static final float NEAR_PLANE = 0.1f;  	// closest visible distance
+	private static final float FAR_PLANE = 1000f;  	// farthest visible distance
+	private static final float ORTHO_SIZE = 20f;		// half the visible height in world units
 
 	private Matrix4f projectionMatrix;
 
 	public Renderer(StaticShader shader) {
 		createProjectionMatrix();
-		// The projection matrix never changes (unless the window resizes), so we
-		// upload it once here instead of every frame.
 		shader.start();
 		shader.loadProjectionMatrix(projectionMatrix);
 		shader.stop();
@@ -59,10 +57,16 @@ public class Renderer {
 	}
 
 	private void createProjectionMatrix() {
-		float aspectRatio = (float) DisplayManager.getWidth() / (float) DisplayManager.getHeight();
-		// JOML builds the whole perspective matrix for us. The tutorial fills in
-		// matrix.m00, m11, m22... by hand - this is the same result.
-		projectionMatrix = new Matrix4f().perspective(
-				(float) Math.toRadians(FOV), aspectRatio, NEAR_PLANE, FAR_PLANE);
+		float aspectRatio = (float) DisplayManager.getWidth() / DisplayManager.getHeight();
+		// projectionMatrix = new Matrix4f().perspective(
+		// 		(float) Math.toRadians(FOV), aspectRatio, NEAR_PLANE, FAR_PLANE);
+		projectionMatrix = new Matrix4f().ortho(
+			-ORTHO_SIZE * aspectRatio, 
+			ORTHO_SIZE * aspectRatio,
+			-ORTHO_SIZE,
+			ORTHO_SIZE,
+			NEAR_PLANE,
+			FAR_PLANE
+		);
 	}
 }

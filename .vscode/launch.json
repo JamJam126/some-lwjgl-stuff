@@ -5,8 +5,8 @@
       "type": "java",
       "name": "MainGameLoop (module)",
       "request": "launch",
-      "mainClass": "GameEngine/tester.MainGameLoop",
-      "projectName": "GameEngine",
+      "mainClass": "SomeLwjglStuff/tester.MainGameLoop",
+      "projectName": "some-lwjgl-stuff",
       "vmArgs": "-Dorg.lwjgl.librarypath=${workspaceFolder}/lib/natives -Djava.library.path=${workspaceFolder}/lib/natives"
     },
     {
@@ -14,7 +14,7 @@
       "name": "MainGameLoop (classpath fallback)",
       "request": "launch",
       "mainClass": "tester.MainGameLoop",
-      "projectName": "GameEngine",
+      "projectName": "some-lwjgl-stuff",
       "modulePaths": [],
       "classPaths": [
         "${workspaceFolder}/bin",
