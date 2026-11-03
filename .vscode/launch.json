@@ -3,17 +3,17 @@
   "configurations": [
     {
       "type": "java",
-      "name": "MainGameLoop (module)",
+      "name": "Main (module)",
       "request": "launch",
-      "mainClass": "SomeLwjglStuff/tester.MainGameLoop",
+      "mainClass": "SomeLwjglStuff/main.Main",
       "projectName": "some-lwjgl-stuff",
       "vmArgs": "-Dorg.lwjgl.librarypath=${workspaceFolder}/lib/natives -Djava.library.path=${workspaceFolder}/lib/natives"
     },
     {
       "type": "java",
-      "name": "MainGameLoop (classpath fallback)",
+      "name": "Main (classpath fallback)",
       "request": "launch",
-      "mainClass": "tester.MainGameLoop",
+      "mainClass": "main.Main",
       "projectName": "some-lwjgl-stuff",
       "modulePaths": [],
       "classPaths": [
