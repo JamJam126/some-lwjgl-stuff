@@ -9,13 +9,19 @@ public class Camera {
 
 	private Vector3f position = new Vector3f(0, 0, 0);
 	private float pitch = 35.264f; // rotation around the X axis (looking up / down)
-	private float yaw   = 45f;   	// rotation around the Y axis (looking left / right)
-	private float roll;  					// rotation around the Z axis (tilting the head)
+	private float yaw   = 45f;   	 // rotation around the Y axis (looking left / right)
+	private float roll;  				 	 // rotation around the Z axis (tilting the head)
 
 	private static final float SPEED = 2.02f;
 
 	public Camera() {	}
 
+	  //          screen up (W)
+    //              ↑
+    //  −Z (row−) ↖   ↗ +X (col+)
+    //              ·
+    //  −X (col−) ↙   ↘ +Z (row+)
+    //              ↓
 	public void move() {
 		long window = DisplayManager.getWindow();
 		float s = (float) Math.sin(Math.toRadians(yaw));

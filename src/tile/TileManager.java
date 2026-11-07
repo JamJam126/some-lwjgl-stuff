@@ -8,10 +8,12 @@ import java.util.List;
 
 import org.joml.Vector3f;
 
+import entities.Camera;
 import entities.Entity;
 import main.Settings;
 import models.RawModel;
 import models.TexturedModel;
+import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.Renderer;
 import shaders.StaticShader;
@@ -24,7 +26,7 @@ public class TileManager {
 
 	private final TexturedModel[] tileTypes;
 	private int[][] mapTileNum; // [row][col]
-	private final List<Entity> tiles = new ArrayList<>();
+	private Entity[][] tiles;   // [row][col]
 
 	public TileManager(Loader loader, String mapName) {
 		RawModel quad = createTileQuad(loader);
@@ -37,8 +39,45 @@ public class TileManager {
 		createTileEntities();
 	}
 
-	public void render(Renderer renderer, StaticShader shader) {
-		for (Entity tile : tiles) renderer.render(tile, shader);
+	/** Draws only the tiles around the point the camera is looking at (the map is too big to draw all). */
+	public void render(Renderer renderer, StaticShader shader, Camera camera) {
+		Vector3f target = getLookAtPoint(camera);
+		int radius = (int) Math.ceil(getViewRadius(camera) / Settings.TILE_SIZE) + 1;
+		int centerCol = Math.round(target.x / Settings.TILE_SIZE);
+		int centerRow = Math.round(target.z / Settings.TILE_SIZE);
+
+		int minRow = Math.max(0, centerRow - radius), maxRow = Math.min(getRows() - 1, centerRow + radius);
+		int minCol = Math.max(0, centerCol - radius), maxCol = Math.min(getCols() - 1, centerCol + radius);
+
+		for (int row = minRow; row <= maxRow; row++) {
+			for (int col = minCol; col <= maxCol; col++) {
+				renderer.render(tiles[row][col], shader);
+			}
+		}
+	}
+
+	/** Where the camera's line of sight hits the ground (y = 0). */
+	private static Vector3f getLookAtPoint(Camera camera) {
+		double pitch = Math.toRadians(camera.getPitch());
+		double yaw = Math.toRadians(camera.getYaw());
+		Vector3f pos = camera.getPosition();
+
+		float dirX = (float) (Math.sin(yaw) * Math.cos(pitch));
+		float dirY = (float) -Math.sin(pitch);
+		float dirZ = (float) (-Math.cos(yaw) * Math.cos(pitch));
+
+		float t = pos.y / -dirY; // distance along the view direction until y = 0
+		return new Vector3f(pos.x + dirX * t, 0, pos.z + dirZ * t);
+	}
+
+	/** How far from the look-at point the screen corners reach on the ground, in world units. */
+	private static float getViewRadius(Camera camera) {
+		float aspect = (float) DisplayManager.getWidth() / DisplayManager.getHeight();
+		float halfHeight = Renderer.getOrthoHalfHeight();
+		float halfWidth = halfHeight * aspect;
+		// Looking down at an angle stretches the screen's height across more ground
+		float halfDepth = halfHeight / (float) Math.sin(Math.toRadians(camera.getPitch()));
+		return (float) Math.sqrt(halfWidth * halfWidth + halfDepth * halfDepth);
 	}
 
 	public int getTile(int col, int row) {
@@ -107,11 +146,12 @@ public class TileManager {
 	}
 
 	private void createTileEntities() {
+		tiles = new Entity[getRows()][getCols()];
 		for (int row = 0; row < getRows(); row++) {
 			for (int col = 0; col < getCols(); col++) {
 				TexturedModel model = tileTypes[mapTileNum[row][col]];
 				Vector3f position = new Vector3f(col * Settings.TILE_SIZE, 0, row * Settings.TILE_SIZE);
-				tiles.add(new Entity(model, position, 0, 0, 0, 1));
+				tiles[row][col] = new Entity(model, position, 0, 0, 0, 1);
 			}
 		}
 	}

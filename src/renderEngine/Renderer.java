@@ -16,11 +16,25 @@ public class Renderer {
 
 	private static final float NEAR_PLANE = 0.1f;  	// closest visible distance
 	private static final float FAR_PLANE = 1000f;  	// farthest visible distance
-	private static final float ORTHO_SIZE = 20f;		// half the visible height in world units
+	public static final float ORTHO_SIZE = 20f;  		// half the visible height in world units, at a 720px tall window
+	private static final float REFERENCE_HEIGHT = 720f;
+
+	/**
+	 * Half the visible height in world units for the current window size.
+	 * Grows with the window, so a bigger window shows more of the map at the same zoom.
+	 */
+	public static float getOrthoHalfHeight() {
+		return ORTHO_SIZE * DisplayManager.getHeight() / REFERENCE_HEIGHT;
+	}
 
 	private Matrix4f projectionMatrix;
 
 	public Renderer(StaticShader shader) {
+		updateProjectionMatrix(shader);
+	}
+
+	/** Rebuilds the projection for the current window size. Call after the window is resized. */
+	public void updateProjectionMatrix(StaticShader shader) {
 		createProjectionMatrix();
 		shader.start();
 		shader.loadProjectionMatrix(projectionMatrix);
@@ -58,13 +72,14 @@ public class Renderer {
 
 	private void createProjectionMatrix() {
 		float aspectRatio = (float) DisplayManager.getWidth() / DisplayManager.getHeight();
+		float halfHeight = getOrthoHalfHeight();
 		// projectionMatrix = new Matrix4f().perspective(
 		// 		(float) Math.toRadians(FOV), aspectRatio, NEAR_PLANE, FAR_PLANE);
 		projectionMatrix = new Matrix4f().ortho(
-			-ORTHO_SIZE * aspectRatio, 
-			ORTHO_SIZE * aspectRatio,
-			-ORTHO_SIZE,
-			ORTHO_SIZE,
+			-halfHeight * aspectRatio,
+			halfHeight * aspectRatio,
+			-halfHeight,
+			halfHeight,
 			NEAR_PLANE,
 			FAR_PLANE
 		);
