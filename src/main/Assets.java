@@ -10,6 +10,7 @@ public class Assets {
 	public final TexturedModel stall;
 	public final TexturedModel dropper;
 	public final TexturedModel conveyor;
+	public final TexturedModel furnace;
 	public final TexturedModel ore;
 
 	public Assets(Loader loader) {
@@ -19,6 +20,7 @@ public class Assets {
 		dropper = load(loader, "dropper/dropper", factoryTexture);
 		conveyor = load(loader, "conveyor/conveyor", factoryTexture);
 		ore = load(loader, "ore/ore", factoryTexture);
+		furnace = load(loader, "furnace/furnace", factoryTexture);
 	}
 
 	private static TexturedModel load(Loader loader, String objFile, ModelTexture texture) {

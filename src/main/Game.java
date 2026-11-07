@@ -9,6 +9,8 @@ import entities.Camera;
 import entities.Entity;
 import entities.Light;
 import entities.machine.Conveyor;
+import entities.machine.Dropper;
+import entities.machine.Furnace;
 import entities.ore.Ore;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
@@ -19,6 +21,8 @@ import tile.TileManager;
 public class Game {
 	private static final int UPS = 60;
 	private static final double UPDATE_INTERVAL = 1_000_000_000.0 / UPS;
+	
+	private int money = 0;
 
 	private final Loader loader;
 	private final StaticShader shader;
@@ -29,8 +33,10 @@ public class Game {
 
 	private final TileManager tileManager;
 	private final List<Entity> entities = new ArrayList<>();
+	private final List<Dropper> droppers = new ArrayList<>();
 	private final List<Conveyor> conveyors = new ArrayList<>();
 	private final List<Ore> ores = new ArrayList<>();
+	private final List<Furnace> furnaces = new ArrayList<>();
 
 	public Game() {
 		DisplayManager.createDisplay();
@@ -43,7 +49,7 @@ public class Game {
 		Assets assets = new Assets(loader);
 		AssetSetter assetSetter = new AssetSetter(assets);
 		assetSetter.setObjects(entities);
-		assetSetter.setMachines(entities, conveyors, ores);
+		assetSetter.setMachines(droppers, conveyors, furnaces, ores);
 
 		// Isometric camera: up and back from the start tile along -x/+z
 		float d = Settings.CAMERA_DISTANCE;
@@ -75,7 +81,23 @@ public class Game {
 
 	private void update() {
 		camera.move();
-		for (Ore ore : ores) ore.update(conveyors);
+		for (int i = ores.size() - 1; i >= 0; i--) {
+			Ore ore = ores.get(i);
+			ore.update(conveyors);
+
+			if (isOnFurnace(ore)) {
+				money += ore.getValue();
+				ores.remove(i);
+				System.out.println("Sold ore for $" + ore.getValue() + ", money: $" + money);
+			}
+		}
+	}
+
+	private boolean isOnFurnace(Ore ore) {
+		for (Furnace furnace : furnaces) {
+			if(ore.isOnSameTile(furnace)) return true;
+		}
+		return false;
 	}
 
 	private void render() {
@@ -87,8 +109,10 @@ public class Game {
 		shader.loadViewMatrix(camera);
 
 		for (Entity entity : entities) renderer.render(entity, shader);
+		for (Dropper dropper : droppers) renderer.render(dropper, shader);
 		for (Ore ore : ores) renderer.render(ore, shader);
 		for (Conveyor conveyor: conveyors) renderer.render(conveyor, shader);
+		for (Furnace furnace: furnaces) renderer.render(furnace, shader);
 
 		tileManager.render(renderer, shader, camera);
 

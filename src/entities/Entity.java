@@ -2,6 +2,7 @@ package entities;
 
 import org.joml.Vector3f;
 
+import main.Settings;
 import models.TexturedModel;
 
 public class Entity {
@@ -24,6 +25,18 @@ public class Entity {
 		this.position.x += dx;
 		this.position.y += dy;
 		this.position.z += dz;
+	}
+
+	public int getCol() {
+		return Math.round(position.x / Settings.TILE_SIZE);
+	}
+
+	public int getRow() {
+		return Math.round(position.z / Settings.TILE_SIZE);
+	}
+
+	public boolean isOnSameTile(Entity other) {
+		return getCol() == other.getCol() && getRow() == other.getRow();
 	}
 
 	public void increaseRotation(float dx, float dy, float dz) {

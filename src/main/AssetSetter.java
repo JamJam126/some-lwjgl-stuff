@@ -6,6 +6,8 @@ import org.joml.Vector3f;
 
 import entities.Entity;
 import entities.machine.Conveyor;
+import entities.machine.Dropper;
+import entities.machine.Furnace;
 import entities.ore.Ore;
 import models.TexturedModel;
 
@@ -23,16 +25,17 @@ public class AssetSetter {
 		entities.add(place(assets.stall, 4, 4, 0));
 	}
 
-	public void setMachines(List<Entity> entities, List<Conveyor> conveyors, List<Ore> ores) {
-		entities.add(place(assets.dropper, 6, 4, 180));
+	public void setMachines(
+		List<Dropper> droppers,
+		List<Conveyor> conveyors, 
+		List<Furnace> furnaces,
+		List<Ore> ores
+	) {
+		droppers.add(placeDropper(6, 4, 180));
 
 		for (int col = 7; col <= 9; col++) conveyors.add(placeConveyor(col, 4, 0));   // +x
-		for (int row = 4; row <= 7; row++) conveyors.add(placeConveyor(10, row, 270)); // corner, then +z
-		// for (int col = 7; col <= 10; col++) {
-		// 	conveyors.add(placeConveyor(col, 4, 0));
-		// }
-
-		// conveyors.add(placeConveyor(7, 6, 270));
+		
+		furnaces.add(placeFurnace(10, 4, 0));
 
 		float[][] orePreview = { 
 			{ 7.25f, 0.1f, 20 }, 
@@ -46,9 +49,19 @@ public class AssetSetter {
 		}
 	}
 
+	private Dropper placeDropper(int col, int row, float rotY) {
+		Vector3f position = new Vector3f((Settings.START_COL + col) * Settings.TILE_SIZE, 0, (Settings.START_ROW + row) * Settings.TILE_SIZE);
+		return new Dropper(assets.dropper, position, rotY);
+	}
+
 	private Conveyor placeConveyor(int col, int row, float rotY) {
 		Vector3f position = new Vector3f((Settings.START_COL + col) * Settings.TILE_SIZE, 0, (Settings.START_ROW + row) * Settings.TILE_SIZE);
 		return new Conveyor(assets.conveyor, position, rotY);
+	}
+
+	private Furnace placeFurnace(int col, int row, float rotY) {
+		Vector3f position = new Vector3f((Settings.START_COL + col) * Settings.TILE_SIZE, 0, (Settings.START_ROW + row) * Settings.TILE_SIZE);
+		return new Furnace(assets.furnace, position, rotY);
 	}
 
 	private static Entity place(TexturedModel model, int col, int row, float rotY) {

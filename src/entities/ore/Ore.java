@@ -6,10 +6,11 @@ import org.joml.Vector3f;
 
 import entities.Entity;
 import entities.machine.Conveyor;
-import main.Settings;
 import models.TexturedModel;
 
 public class Ore extends Entity {
+  private final int value = 10;
+
   public Ore(
     TexturedModel model, 
     Vector3f position, 
@@ -29,16 +30,11 @@ public class Ore extends Entity {
   }
 
   private Conveyor findConveyor(List<Conveyor> conveyors) {
-    int col = Math.round(getPosition().x / Settings.TILE_SIZE);
-    int row = Math.round(getPosition().z / Settings.TILE_SIZE);
-
     for (Conveyor c : conveyors) {
-      int cCol = Math.round(c.getPosition().x / Settings.TILE_SIZE);
-      int cRow = Math.round(c.getPosition().z / Settings.TILE_SIZE);
-
-      if (cCol == col && cRow == row) return  c;
+      if (isOnSameTile(c)) return c;
     }
     return null;
   }
-  
+
+  public int getValue() { return value; }
 }
