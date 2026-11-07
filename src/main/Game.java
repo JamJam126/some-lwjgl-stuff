@@ -75,7 +75,7 @@ public class Game {
 
 	private void update() {
 		camera.move();
-		for (Ore ore : ores) ore.update();
+		for (Ore ore : ores) ore.update(conveyors);
 	}
 
 	private void render() {

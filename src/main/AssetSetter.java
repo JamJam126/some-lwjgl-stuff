@@ -26,11 +26,13 @@ public class AssetSetter {
 	public void setMachines(List<Entity> entities, List<Conveyor> conveyors, List<Ore> ores) {
 		entities.add(place(assets.dropper, 6, 4, 180));
 
-		for (int col = 7; col <= 10; col++) {
-			conveyors.add(placeConveyor(col, 4, 0));
-		}
+		for (int col = 7; col <= 9; col++) conveyors.add(placeConveyor(col, 4, 0));   // +x
+		for (int row = 4; row <= 7; row++) conveyors.add(placeConveyor(10, row, 270)); // corner, then +z
+		// for (int col = 7; col <= 10; col++) {
+		// 	conveyors.add(placeConveyor(col, 4, 0));
+		// }
 
-		conveyors.add(placeConveyor(7, 6, 270));
+		// conveyors.add(placeConveyor(7, 6, 270));
 
 		float[][] orePreview = { 
 			{ 7.25f, 0.1f, 20 }, 

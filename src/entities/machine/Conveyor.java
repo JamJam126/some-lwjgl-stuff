@@ -8,6 +8,7 @@ import models.TexturedModel;
 
 public class Conveyor extends Entity {
 
+  private final float SPEED = 0.1F;
   private final int dirX;
   private final int dirZ;
 
@@ -31,5 +32,6 @@ public class Conveyor extends Entity {
   
   public int getDirX() { return dirX; }
   public int getDirZ() { return dirZ; }
+  public float getSpeed() { return SPEED; }
 
 }
