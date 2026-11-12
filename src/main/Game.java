@@ -49,7 +49,7 @@ public class Game {
 		Assets assets = new Assets(loader);
 		AssetSetter assetSetter = new AssetSetter(assets);
 		assetSetter.setObjects(entities);
-		assetSetter.setMachines(droppers, conveyors, furnaces, ores);
+		assetSetter.setMachines(droppers, conveyors, furnaces);
 
 		// Isometric camera: up and back from the start tile along -x/+z
 		float d = Settings.CAMERA_DISTANCE;
@@ -90,6 +90,9 @@ public class Game {
 				ores.remove(i);
 				System.out.println("Sold ore for $" + ore.getValue() + ", money: $" + money);
 			}
+		}
+		for (Dropper dropper : droppers) {
+			dropper.update(ores);
 		}
 	}
 

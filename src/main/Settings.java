@@ -4,6 +4,7 @@ public final class Settings {
 
 	// WORLD SETTINGS
 	public static final float TILE_SIZE = 16; // world units per tile (models are built 1x1, so scale = TILE_SIZE)
+	public static final float BELT_TOP = 0.108f; // top of the conveyor belt in tiles (belt_height 0.10 + a little so ore sits on it)
 
 	// STARTING AREA: top-left tile of the 16x16 starting layout in map01 (centred on the 160x160 map).
 	// AssetSetter places machines relative to this tile.
