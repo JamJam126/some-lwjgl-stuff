@@ -1,5 +1,6 @@
 package renderEngine;
 
+import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -8,6 +9,7 @@ import java.util.List;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
@@ -42,6 +44,14 @@ public class Loader {
 
 		return new RawModel(vaoID, indices.length);
 	}
+
+	public RawModel loadToVAO(float[] positions, int dimension) {
+		int vaoID = createVAO();
+		storeDataInAttributeList(0, dimension, positions);
+		unbindVAO();
+
+		return new RawModel(vaoID, positions.length / dimension);
+	}
 	
 	public int loadTexture(String fileName) {
 		int width, height;
@@ -74,9 +84,36 @@ public class Loader {
 		textures.add(textureID);
 		
 		return textureID;
-		
+
 	}
-	
+
+	public int loadTexture(BufferedImage image) {
+		int width = image.getWidth(), height = image.getHeight();
+		int[] pixels = image.getRGB(0, 0, width, height, null, 0, width);
+
+		// ARGB -> RGBA
+		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * 4);
+		for (int p : pixels) {
+			buffer.put((byte) (p >> 16));
+			buffer.put((byte) (p >> 8));
+			buffer.put((byte) p);
+			buffer.put((byte) (p >> 24));
+		}
+		buffer.flip();
+
+		int textureID = GL11.glGenTextures();
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, width, height, 0,
+							GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
+
+		textures.add(textureID);
+		return textureID;
+	}
+
 	public void cleanUp() {
 		for(int vao: vaos) {
 			GL30.glDeleteVertexArrays(vao);

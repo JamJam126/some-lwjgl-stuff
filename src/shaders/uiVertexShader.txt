@@ -1,0 +1,12 @@
+#version 400 core
+in vec2 position;            // 0..1 corner of the unit quad
+out vec2 uv;
+
+uniform mat4 projectionMatrix;  // pixels -> screen
+uniform vec4 rect;              // x, y, width, height in pixels
+uniform vec4 uvRect;            // which part of the texture (whole image = 0, 0, 1, 1)
+
+void main(void) {
+    uv = uvRect.xy + position * uvRect.zw;
+    gl_Position = projectionMatrix * vec4(rect.xy + position * rect.zw, 0.0, 1.0);
+}

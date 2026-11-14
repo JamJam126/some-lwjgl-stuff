@@ -1,12 +1,11 @@
 package entities.ore;
 
-import java.util.List;
-
 import org.joml.Vector3f;
 
 import entities.Entity;
 import entities.machine.Conveyor;
 import models.TexturedModel;
+import tile.MachineGrid;
 
 public class Ore extends Entity {
   private final int value = 10;
@@ -22,18 +21,9 @@ public class Ore extends Entity {
     super(model, position, rotX, rotY, rotZ, scale);
   }
   
-  public void update(List<Conveyor> conveyors) {
-    Conveyor below = findConveyor(conveyors);
-
-    if (below == null) return;
+  public void update(MachineGrid grid) {
+    if (!(grid.get(getCol(), getRow()) instanceof Conveyor below)) return;
     this.increasePosition(below.getDirX() * below.getSpeed(), 0, below.getDirZ() * below.getSpeed());
-  }
-
-  private Conveyor findConveyor(List<Conveyor> conveyors) {
-    for (Conveyor c : conveyors) {
-      if (isOnSameTile(c)) return c;
-    }
-    return null;
   }
 
   public int getValue() { return value; }

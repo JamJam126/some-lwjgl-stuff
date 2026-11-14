@@ -8,8 +8,8 @@ import entities.Entity;
 import entities.machine.Conveyor;
 import entities.machine.Dropper;
 import entities.machine.Furnace;
-import entities.ore.Ore;
 import models.TexturedModel;
+import tile.MachineGrid;
 
 public class AssetSetter {
 
@@ -26,13 +26,22 @@ public class AssetSetter {
 	public void setMachines(
 		List<Dropper> droppers,
 		List<Conveyor> conveyors, 
-		List<Furnace> furnaces
+		List<Furnace> furnaces,
+		MachineGrid grid
 	) {
-		droppers.add(placeDropper(6, 4, 0));
+		register(droppers, placeDropper(6, 4, 0), grid);
 
-		for (int col = 7; col <= 9; col++) conveyors.add(placeConveyor(col, 4, 0));   // +x
-		
-		furnaces.add(placeFurnace(10, 4, 0));
+		for (int col = 7; col <= 9; col++) register(conveyors, placeConveyor(col, 4, 0), grid);   // +x
+
+		register(furnaces, placeFurnace(10, 4, 0), grid);
+	}
+
+	private static <T extends Entity> void register(List<T> list, T machine, MachineGrid grid) {
+		if (!grid.place(machine)) {
+			System.err.println("Tile " + machine.getCol() + "," + machine.getRow() + " is already taken, skipping " + machine.getClass().getSimpleName());
+			return;
+		}
+		list.add(machine);
 	}
 
 	private Dropper placeDropper(int col, int row, float rotY) {
