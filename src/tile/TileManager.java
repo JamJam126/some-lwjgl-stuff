@@ -41,19 +41,26 @@ public class TileManager {
 
 	/** Draws only the tiles around the point the camera is looking at (the map is too big to draw all). */
 	public void render(Renderer renderer, StaticShader shader, Camera camera) {
+		VisibleArea area = getVisibleArea(camera);
+		for (int row = area.minRow(); row <= area.maxRow(); row++) {
+			for (int col = area.minCol(); col <= area.maxCol(); col++) {
+				renderer.render(tiles[row][col], shader);
+			}
+		}
+	}
+
+	public record VisibleArea(int minCol, int minRow, int maxCol, int maxRow) {}
+
+	public VisibleArea getVisibleArea(Camera camera) {
 		Vector3f target = getLookAtPoint(camera);
 		int radius = (int) Math.ceil(getViewRadius(camera) / Settings.TILE_SIZE) + 1;
 		int centerCol = Math.round(target.x / Settings.TILE_SIZE);
 		int centerRow = Math.round(target.z / Settings.TILE_SIZE);
 
-		int minRow = Math.max(0, centerRow - radius), maxRow = Math.min(getRows() - 1, centerRow + radius);
-		int minCol = Math.max(0, centerCol - radius), maxCol = Math.min(getCols() - 1, centerCol + radius);
-
-		for (int row = minRow; row <= maxRow; row++) {
-			for (int col = minCol; col <= maxCol; col++) {
-				renderer.render(tiles[row][col], shader);
-			}
-		}
+		return new VisibleArea(
+			Math.max(0, centerCol - radius), Math.max(0, centerRow - radius),
+			Math.min(getCols() - 1, centerCol + radius), Math.min(getRows() - 1, centerRow + radius)
+		);
 	}
 
 	/** Where the camera's line of sight hits the ground (y = 0). */

@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.glfw.GLFW;
 
+import debug.DebugRenderer;
 import entities.Camera;
 import entities.Entity;
 import entities.Light;
@@ -29,6 +31,8 @@ public class Game {
 	private static final Vector4f MONEY_COLOUR = new Vector4f(1, 0.85f, 0.3f, 1);
 
 	private int money = 0;
+	private boolean debug = false;
+	private boolean debugKeyWasDown = false;
 
 	private final Loader loader;
 	private final StaticShader shader;
@@ -45,6 +49,7 @@ public class Game {
 	private final List<Ore> ores = new ArrayList<>();
 	private final List<Furnace> furnaces = new ArrayList<>();
 	private final MachineGrid machineGrid;
+	private final DebugRenderer debugRenderer;
 
 	public Game() {
 		DisplayManager.createDisplay();
@@ -55,6 +60,7 @@ public class Game {
 
 		tileManager = new TileManager(loader, "map01");
 		machineGrid = new MachineGrid(tileManager.getCols(), tileManager.getRows());
+		debugRenderer = new DebugRenderer(loader, tileManager.getCols(), tileManager.getRows());
 
 		Assets assets = new Assets(loader);
 		AssetSetter assetSetter = new AssetSetter(assets);
@@ -90,6 +96,7 @@ public class Game {
 	}
 
 	private void update() {
+		toggleDebugOnF3();
 		camera.move();
 		for (int i = ores.size() - 1; i >= 0; i--) {
 			Ore ore = ores.get(i);
@@ -104,6 +111,12 @@ public class Game {
 		for (Dropper dropper : droppers) {
 			dropper.update(ores);
 		}
+	}
+
+	private void toggleDebugOnF3() {
+		boolean down = GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_F3) == GLFW.GLFW_PRESS;
+		if (down && !debugKeyWasDown) debug = !debug; // only on the frame the key goes down
+		debugKeyWasDown = down;
 	}
 
 	private boolean isOnFurnace(Ore ore) {
@@ -128,11 +141,15 @@ public class Game {
 
 		shader.stop();
 
+		if (debug) debugRenderer.renderGrid(renderer.getProjectionMatrix(), camera);
+
 		renderUI();
 	}
 
 	private void renderUI() {
 		uiRenderer.begin();
+		if (debug) debugRenderer.renderLabels(uiRenderer, renderer.getProjectionMatrix(), camera, tileManager);
+
 		String moneyText = "$" + money;
 		uiRenderer.drawRect(12, 12, uiRenderer.getTextWidth(moneyText, 32) + 24, 48, PANEL_COLOUR);
 		uiRenderer.drawText(moneyText, 24, 20, 32, MONEY_COLOUR);
@@ -142,6 +159,7 @@ public class Game {
 	private void cleanUp() {
 		shader.cleanUp();
 		uiRenderer.cleanUp();
+		debugRenderer.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
 	}
