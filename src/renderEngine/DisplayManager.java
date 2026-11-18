@@ -5,6 +5,8 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 
+import input.MouseHandler;
+
 
 public class DisplayManager {
 	
@@ -63,6 +65,8 @@ public class DisplayManager {
 		GLFW.glfwSetKeyCallback(window, (win, key, scancode, action, mods) -> {
 			if (key == GLFW.GLFW_KEY_F11 && action == GLFW.GLFW_PRESS) toggleFullscreen();
 		});
+
+		MouseHandler.init(window);
 	}
 	
 	public static void updateDisplay() {
@@ -74,7 +78,7 @@ public class DisplayManager {
 		return GLFW.glfwWindowShouldClose(window);
 	}
 
-	/** The GLFW window handle. Needed for polling input with glfwGetKey. */
+	// The GLFW window handle. Needed for polling input with glfwGetKey.
 	public static long getWindow() {
 		return window;
 	}
@@ -87,7 +91,7 @@ public class DisplayManager {
 		return height;
 	}
 
-	/** True once after the window changed size, so the renderer can rebuild its projection. */
+	// True once after the window changed size, so the renderer can rebuild its projection.
 	public static boolean wasResized() {
 		boolean r = resized;
 		resized = false;

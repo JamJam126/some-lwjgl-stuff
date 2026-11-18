@@ -39,7 +39,7 @@ public class TileManager {
 		createTileEntities();
 	}
 
-	/** Draws only the tiles around the point the camera is looking at (the map is too big to draw all). */
+	// Only draws the tiles around where the camera is looking
 	public void render(Renderer renderer, StaticShader shader, Camera camera) {
 		VisibleArea area = getVisibleArea(camera);
 		for (int row = area.minRow(); row <= area.maxRow(); row++) {
@@ -63,7 +63,7 @@ public class TileManager {
 		);
 	}
 
-	/** Where the camera's line of sight hits the ground (y = 0). */
+	// Where the camera's line of sight hits the ground (y = 0)
 	private static Vector3f getLookAtPoint(Camera camera) {
 		double pitch = Math.toRadians(camera.getPitch());
 		double yaw = Math.toRadians(camera.getYaw());
@@ -77,7 +77,7 @@ public class TileManager {
 		return new Vector3f(pos.x + dirX * t, 0, pos.z + dirZ * t);
 	}
 
-	/** How far from the look-at point the screen corners reach on the ground, in world units. */
+	// How far the screen corners reach on the ground from the look-at point
 	private static float getViewRadius(Camera camera) {
 		float aspect = (float) DisplayManager.getWidth() / DisplayManager.getHeight();
 		float halfHeight = Renderer.getOrthoHalfHeight();

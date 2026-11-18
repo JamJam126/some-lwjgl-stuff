@@ -19,10 +19,7 @@ public class Renderer {
 	public static final float ORTHO_SIZE = 20f;  		// half the visible height in world units, at a 720px tall window
 	private static final float REFERENCE_HEIGHT = 720f;
 
-	/**
-	 * Half the visible height in world units for the current window size.
-	 * Grows with the window, so a bigger window shows more of the map at the same zoom.
-	 */
+	// Half the visible height in world units, grows with the window so the zoom stays the same
 	public static float getOrthoHalfHeight() {
 		return ORTHO_SIZE * DisplayManager.getHeight() / REFERENCE_HEIGHT;
 	}
@@ -33,7 +30,7 @@ public class Renderer {
 		updateProjectionMatrix(shader);
 	}
 
-	/** Rebuilds the projection for the current window size. Call after the window is resized. */
+	// Call after the window is resized
 	public void updateProjectionMatrix(StaticShader shader) {
 		createProjectionMatrix();
 		shader.start();

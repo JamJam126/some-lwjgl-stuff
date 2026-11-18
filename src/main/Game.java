@@ -15,12 +15,15 @@ import entities.machine.Conveyor;
 import entities.machine.Dropper;
 import entities.machine.Furnace;
 import entities.ore.Ore;
+import input.MouseHandler;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.Renderer;
 import shaders.StaticShader;
 import tile.MachineGrid;
 import tile.TileManager;
+import tile.TilePosition;
+import toolbox.MousePicker;
 import ui.UIRenderer;
 
 public class Game {
@@ -50,12 +53,14 @@ public class Game {
 	private final List<Furnace> furnaces = new ArrayList<>();
 	private final MachineGrid machineGrid;
 	private final DebugRenderer debugRenderer;
+	private final MousePicker mousePicker;
 
 	public Game() {
 		DisplayManager.createDisplay();
 		loader = new Loader();
 		shader = new StaticShader();
 		renderer = new Renderer(shader);
+		mousePicker = new MousePicker(camera, renderer);
 		uiRenderer = new UIRenderer(loader);
 
 		tileManager = new TileManager(loader, "map01");
@@ -97,6 +102,12 @@ public class Game {
 
 	private void update() {
 		toggleDebugOnF3();
+		
+		if (MouseHandler.wasLeftClicked()) {
+			TilePosition tile = mousePicker.getTile(MouseHandler.getX(), MouseHandler.getY());
+			System.out.println("Clicked tile " + tile + ", machine: " + machineGrid.get(tile.col(), tile.row()));
+		}
+
 		camera.move();
 		for (int i = ores.size() - 1; i >= 0; i--) {
 			Ore ore = ores.get(i);
