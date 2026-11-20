@@ -1,67 +1,16 @@
 package main;
 
-import java.util.List;
-
-import org.joml.Vector3f;
-
-import entities.Entity;
-import entities.machine.Conveyor;
-import entities.machine.Dropper;
-import entities.machine.Furnace;
-import models.TexturedModel;
-import tile.MachineGrid;
+import entities.machine.MachineType;
 
 public class AssetSetter {
 
-	private final Assets assets;
+	// Starting line is centred on the tile the camera looks at
+	public void setMachines(MachinePlacer placer) {
+		int col = Settings.CAMERA_START_COL;
+		int row = Settings.CAMERA_START_ROW;
 
-	public AssetSetter(Assets assets) {
-		this.assets = assets;
-	}
-
-	public void setObjects(List<Entity> entities) {
-		entities.add(place(assets.stall, 4, 4, 0));
-	}
-
-	public void setMachines(
-		List<Dropper> droppers,
-		List<Conveyor> conveyors, 
-		List<Furnace> furnaces,
-		MachineGrid grid
-	) {
-		register(droppers, placeDropper(6, 4, 0), grid);
-
-		for (int col = 7; col <= 9; col++) register(conveyors, placeConveyor(col, 4, 0), grid);   // +x
-
-		register(furnaces, placeFurnace(10, 4, 0), grid);
-	}
-
-	private static <T extends Entity> void register(List<T> list, T machine, MachineGrid grid) {
-		if (!grid.place(machine)) {
-			System.err.println("Tile " + machine.getCol() + "," + machine.getRow() + " is already taken, skipping " + machine.getClass().getSimpleName());
-			return;
-		}
-		list.add(machine);
-	}
-
-	private Dropper placeDropper(int col, int row, float rotY) {
-		Vector3f position = new Vector3f((Settings.START_COL + col) * Settings.TILE_SIZE, 0, (Settings.START_ROW + row) * Settings.TILE_SIZE);
-		return new Dropper(assets.dropper, assets.ore, position, rotY);
-	}
-
-	private Conveyor placeConveyor(int col, int row, float rotY) {
-		Vector3f position = new Vector3f((Settings.START_COL + col) * Settings.TILE_SIZE, 0, (Settings.START_ROW + row) * Settings.TILE_SIZE);
-		return new Conveyor(assets.conveyor, position, rotY);
-	}
-
-	private Furnace placeFurnace(int col, int row, float rotY) {
-		Vector3f position = new Vector3f((Settings.START_COL + col) * Settings.TILE_SIZE, 0, (Settings.START_ROW + row) * Settings.TILE_SIZE);
-		return new Furnace(assets.furnace, position, rotY);
-	}
-
-	private static Entity place(TexturedModel model, int col, int row, float rotY) {
-		Vector3f position = new Vector3f(
-			(Settings.START_COL + col) * Settings.TILE_SIZE, 0, (Settings.START_ROW + row) * Settings.TILE_SIZE);
-		return new Entity(model, position, 0, rotY, 0, Settings.TILE_SIZE);
+		placer.place(MachineType.DROPPER, col - 2, row, 0);
+		for (int c = col - 1; c <= col + 1; c++) placer.place(MachineType.CONVEYOR, c, row, 0);
+		placer.place(MachineType.FURNACE, col + 2, row, 0);
 	}
 }

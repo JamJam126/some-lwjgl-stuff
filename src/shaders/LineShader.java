@@ -1,6 +1,7 @@
 package shaders;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import entities.Camera;
@@ -14,6 +15,7 @@ public class LineShader extends ShaderProgram {
 	private int location_projectionMatrix;
 	private int location_viewMatrix;
 	private int location_colour;
+	private int location_offset;
 
 	public LineShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -29,6 +31,7 @@ public class LineShader extends ShaderProgram {
 		location_projectionMatrix = getUniformLocation("projectionMatrix");
 		location_viewMatrix = getUniformLocation("viewMatrix");
 		location_colour = getUniformLocation("colour");
+		location_offset = getUniformLocation("offset");
 	}
 
 	public void loadProjectionMatrix(Matrix4f projection) {
@@ -41,5 +44,9 @@ public class LineShader extends ShaderProgram {
 
 	public void loadColour(Vector4f colour) {
 		loadVector4(location_colour, colour.x, colour.y, colour.z, colour.w);
+	}
+
+	public void loadOffset(float x, float y, float z) {
+		loadVector(location_offset, new Vector3f(x, y, z));
 	}
 }

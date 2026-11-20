@@ -109,10 +109,10 @@ public class DisplayManager {
 
 		if (!fullscreen) {
 			GLFW.glfwSetWindowMonitor(window, monitor, 0, 0, mode.width(), mode.height(), mode.refreshRate());
-    } else {
+	} else {
 			GLFW.glfwSetWindowMonitor(window, 0, 100, 100, WINDOWED_WIDTH, WINDOWED_HEIGHT, GLFW.GLFW_DONT_CARE);
-    }
+	}
 
-    fullscreen = !fullscreen;
+	fullscreen = !fullscreen;
 	}
 }

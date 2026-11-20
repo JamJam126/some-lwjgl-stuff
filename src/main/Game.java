@@ -14,11 +14,13 @@ import entities.Light;
 import entities.machine.Conveyor;
 import entities.machine.Dropper;
 import entities.machine.Furnace;
+import entities.machine.MachineType;
 import entities.ore.Ore;
 import input.MouseHandler;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.Renderer;
+import renderEngine.TileHighlight;
 import shaders.StaticShader;
 import tile.MachineGrid;
 import tile.TileManager;
@@ -32,10 +34,17 @@ public class Game {
 	
 	private static final Vector4f PANEL_COLOUR = new Vector4f(0, 0, 0, 0.5f);
 	private static final Vector4f MONEY_COLOUR = new Vector4f(1, 0.85f, 0.3f, 1);
+	private static final Vector4f SELECTED_COLOUR = new Vector4f(1, 1, 0, 0.4f);
+	private static final Vector4f CAN_PLACE = new Vector4f(0, 1, 0, 0.4f);
+	private static final Vector4f CANT_PLACE = new Vector4f(1, 0, 0, 0.4f);
 
 	private int money = 0;
 	private boolean debug = false;
-	private boolean debugKeyWasDown = false;
+	private final boolean[] keyWasDown = new boolean[GLFW.GLFW_KEY_LAST + 1];
+	private MachineType selectedType = null;
+	private int currentRotation = 0;
+	private TilePosition hoveredTile = null;
+	private TilePosition selectedTile = null;
 
 	private final Loader loader;
 	private final StaticShader shader;
@@ -49,11 +58,13 @@ public class Game {
 	private final List<Entity> entities = new ArrayList<>();
 	private final List<Dropper> droppers = new ArrayList<>();
 	private final List<Conveyor> conveyors = new ArrayList<>();
-	private final List<Ore> ores = new ArrayList<>();
 	private final List<Furnace> furnaces = new ArrayList<>();
+	private final List<Ore> ores = new ArrayList<>();
 	private final MachineGrid machineGrid;
+	private final MachinePlacer machinePlacer;
 	private final DebugRenderer debugRenderer;
 	private final MousePicker mousePicker;
+	private final TileHighlight tileHighlight;
 
 	public Game() {
 		DisplayManager.createDisplay();
@@ -62,15 +73,16 @@ public class Game {
 		renderer = new Renderer(shader);
 		mousePicker = new MousePicker(camera, renderer);
 		uiRenderer = new UIRenderer(loader);
+		tileHighlight = new TileHighlight(loader);
 
 		tileManager = new TileManager(loader, "map01");
 		machineGrid = new MachineGrid(tileManager.getCols(), tileManager.getRows());
 		debugRenderer = new DebugRenderer(loader, tileManager.getCols(), tileManager.getRows());
 
 		Assets assets = new Assets(loader);
-		AssetSetter assetSetter = new AssetSetter(assets);
-		assetSetter.setObjects(entities);
-		assetSetter.setMachines(droppers, conveyors, furnaces, machineGrid);
+		machinePlacer = new MachinePlacer(assets, machineGrid, droppers, conveyors, furnaces);
+		AssetSetter assetSetter = new AssetSetter();
+		assetSetter.setMachines(machinePlacer);
 
 		// Isometric camera: up and back from the start tile along -x/+z
 		float d = Settings.CAMERA_DISTANCE;
@@ -101,11 +113,47 @@ public class Game {
 	}
 
 	private void update() {
-		toggleDebugOnF3();
+		if (wasKeyPressed(GLFW.GLFW_KEY_F3)) debug = !debug;
+		if (wasKeyPressed(GLFW.GLFW_KEY_R))  currentRotation = (currentRotation + 90) % 360;
+		if (wasKeyPressed(GLFW.GLFW_KEY_X) && selectedTile != null) {
+			machinePlacer.remove(selectedTile.col(), selectedTile.row());
+			selectedTile = null;
+		}
+		
+		handleHover();
 		
 		if (MouseHandler.wasLeftClicked()) {
-			TilePosition tile = mousePicker.getTile(MouseHandler.getX(), MouseHandler.getY());
-			System.out.println("Clicked tile " + tile + ", machine: " + machineGrid.get(tile.col(), tile.row()));
+
+			if (hoveredTile == null) {
+				selectedTile = null; // clicked off the map
+
+			} else if (selectedType != null) {
+				machinePlacer.place(selectedType, hoveredTile.col(), hoveredTile.row(), currentRotation);
+
+			} else if (machineGrid.get(hoveredTile.col(), hoveredTile.row()) != null) {
+				selectedTile = hoveredTile;
+			
+			} else {
+				selectedTile = null; // clicked empty ground
+			}
+		}
+
+		// SELECT MACHINE BASED ON KEY (1 = Dropper)
+		if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_1) == GLFW.GLFW_PRESS) {
+			selectedTile = null;
+			selectedType = MachineType.DROPPER;
+
+		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_2) == GLFW.GLFW_PRESS) {
+			selectedTile = null;
+			selectedType = MachineType.CONVEYOR;
+
+		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_3) == GLFW.GLFW_PRESS) {
+			selectedTile = null;
+			selectedType = MachineType.FURNACE;
+
+		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) {
+			selectedType = null;
+			selectedTile = null;
 		}
 
 		camera.move();
@@ -116,7 +164,6 @@ public class Game {
 			if (isOnFurnace(ore)) {
 				money += ore.getValue();
 				ores.remove(i);
-				System.out.println("Sold ore for $" + ore.getValue() + ", money: $" + money);
 			}
 		}
 		for (Dropper dropper : droppers) {
@@ -124,10 +171,18 @@ public class Game {
 		}
 	}
 
-	private void toggleDebugOnF3() {
-		boolean down = GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_F3) == GLFW.GLFW_PRESS;
-		if (down && !debugKeyWasDown) debug = !debug; // only on the frame the key goes down
-		debugKeyWasDown = down;
+	private void handleHover() {
+		TilePosition tile = mousePicker.getTile(MouseHandler.getX(), MouseHandler.getY());
+		if (machineGrid.isInside(tile.col(), tile.row())) hoveredTile = tile;
+		else hoveredTile = null;
+	}
+
+	private boolean wasKeyPressed(int key) {
+		boolean down = GLFW.glfwGetKey(DisplayManager.getWindow(), key) == GLFW.GLFW_PRESS;
+		boolean pressed = down && !keyWasDown[key];
+		keyWasDown[key] = down;
+
+		return pressed;
 	}
 
 	private boolean isOnFurnace(Ore ore) {
@@ -153,8 +208,16 @@ public class Game {
 		shader.stop();
 
 		if (debug) debugRenderer.renderGrid(renderer.getProjectionMatrix(), camera);
-
+		renderHighLight();
 		renderUI();
+	}
+
+	private void renderHighLight() {
+		if (selectedTile != null) tileHighlight.render(renderer.getProjectionMatrix(), camera, selectedTile.col(), selectedTile.row(), SELECTED_COLOUR);
+		if (selectedType == null || hoveredTile == null) return;
+		Vector4f color = machineGrid.isFree(hoveredTile.col(), hoveredTile.row()) ? CAN_PLACE : CANT_PLACE;
+
+		tileHighlight.render(renderer.getProjectionMatrix(), camera, hoveredTile.col(), hoveredTile.row(), color);
 	}
 
 	private void renderUI() {
@@ -171,6 +234,7 @@ public class Game {
 		shader.cleanUp();
 		uiRenderer.cleanUp();
 		debugRenderer.cleanUp();
+		tileHighlight.cleanUp();
 		loader.cleanUp();
 		DisplayManager.closeDisplay();
 	}

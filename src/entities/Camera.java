@@ -17,11 +17,11 @@ public class Camera {
 	public Camera() {	}
 
 	  //          screen up (W)
-    //              ↑
-    //  −Z (row−) ↖   ↗ +X (col+)
-    //              ·
-    //  −X (col−) ↙   ↘ +Z (row+)
-    //              ↓
+	//              ↑
+	//  −Z (row−) ↖   ↗ +X (col+)
+	//              ·
+	//  −X (col−) ↙   ↘ +Z (row+)
+	//              ↓
 	public void move() {
 		long window = DisplayManager.getWindow();
 		float s = (float) Math.sin(Math.toRadians(yaw));
