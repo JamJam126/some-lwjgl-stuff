@@ -40,6 +40,7 @@ public class Game {
 	private static final Vector4f SELECTED_COLOUR = new Vector4f(1, 1, 0, 0.4f);
 	private static final Vector4f CAN_PLACE = new Vector4f(0, 1, 0, 0.4f);
 	private static final Vector4f CANT_PLACE = new Vector4f(1, 0, 0, 0.4f);
+	private static final Vector3f NO_TINT = new Vector3f(1, 1, 1);
 
 	private int money = 0;
 	private boolean debug = false;
@@ -150,20 +151,14 @@ public class Game {
 			}
 		}
 
-		// SELECT MACHINE BASED ON KEY (1 = Dropper)
-		if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_1) == GLFW.GLFW_PRESS) {
-			selectedTile = null;
-			selectedType = Items.BASIC_DROPPER;
-
-		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_2) == GLFW.GLFW_PRESS) {
-			selectedTile = null;
-			selectedType = Items.CONVEYOR;
-
-		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_3) == GLFW.GLFW_PRESS) {
-			selectedTile = null;
-			selectedType = Items.FURNACE;
-
-		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) {
+		// Key 1 picks the first item in Items.ALL, key 2 the second, and so on (up to 9)
+		for (int i = 0; i < Math.min(Items.ALL.size(), 9); i++) {
+			if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_1 + i) == GLFW.GLFW_PRESS) {
+				selectedTile = null;
+				selectedType = Items.ALL.get(i);
+			}
+		}
+		if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) {
 			selectedType = null;
 			selectedTile = null;
 		}
@@ -173,8 +168,8 @@ public class Game {
 			Ore ore = ores.get(i);
 			ore.update(machineGrid);
 
-			if (isOnFurnace(ore)) {
-				money += ore.getValue();
+			if (machineGrid.get(ore.getCol(), ore.getRow()) instanceof Furnace furnace) {
+				money += Math.round(ore.getValue() * furnace.getMultiplier());
 				ores.remove(i);
 			}
 		}
@@ -202,10 +197,6 @@ public class Game {
 		return pressed;
 	}
 
-	private boolean isOnFurnace(Ore ore) {
-		return machineGrid.get(ore.getCol(), ore.getRow()) instanceof Furnace;
-	}
-
 	private void render() {
 		if (DisplayManager.wasResized()) renderer.updateProjectionMatrix(shader);
 
@@ -213,10 +204,15 @@ public class Game {
 		shader.start();
 		shader.loadLight(light);
 		shader.loadViewMatrix(camera);
+		shader.loadTint(NO_TINT);
 
 		for (Entity entity : entities) renderer.render(entity, shader);
 		for (Dropper dropper : droppers) renderer.render(dropper, shader);
-		for (Ore ore : ores) renderer.render(ore, shader);
+		for (Ore ore : ores) {
+			shader.loadTint(ore.getDefinition().colour());
+			renderer.render(ore, shader);
+		}
+		shader.loadTint(NO_TINT);
 		for (Conveyor conveyor: conveyors) renderer.render(conveyor, shader);
 		for (Furnace furnace: furnaces) renderer.render(furnace, shader);
 

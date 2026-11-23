@@ -1,6 +1,7 @@
 package shaders;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 import entities.Camera;
 import entities.Light;
@@ -16,6 +17,7 @@ public class StaticShader extends ShaderProgram {
 	private int location_viewMatrix;
 	private int location_lightPosition;
 	private int location_lightColour;
+	private int location_tint;
 
 	public StaticShader() {
 		super(VERTEX_FILE, FRAGMENT_FILE);
@@ -35,6 +37,7 @@ public class StaticShader extends ShaderProgram {
 		location_viewMatrix = getUniformLocation("viewMatrix");
 		location_lightPosition = getUniformLocation("lightPosition");
 		location_lightColour = getUniformLocation("lightColour");
+		location_tint = getUniformLocation("tint");
 	}
 
 	public void loadTransformationMatrix(Matrix4f matrix) {
@@ -53,5 +56,9 @@ public class StaticShader extends ShaderProgram {
 	public void loadLight(Light light) {
 		loadVector(location_lightPosition, light.getPosition());
 		loadVector(location_lightColour, light.getColour());
+	}
+
+	public void loadTint(Vector3f tint) {
+		loadVector(location_tint, tint);
 	}
 }

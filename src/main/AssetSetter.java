@@ -19,5 +19,10 @@ public class AssetSetter {
 		inventory.add(Items.BASIC_DROPPER, 2);
 		inventory.add(Items.CONVEYOR,      13);
 		inventory.add(Items.FURNACE,       1);
+		inventory.add(Items.FAST_DROPPER,    1);
+		inventory.add(Items.GOLD_DROPPER,    1);
+		inventory.add(Items.DIAMOND_DROPPER, 1);
+		inventory.add(Items.HOT_FURNACE,     1);
+		inventory.add(Items.BLAST_FURNACE,   1);
 	}
 }

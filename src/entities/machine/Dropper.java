@@ -7,6 +7,7 @@ import org.joml.Vector3f;
 
 import entities.ore.Ore;
 import items.DropperDefinition;
+import items.OreDefinition;
 import main.Settings;
 import models.TexturedModel;
 
@@ -17,7 +18,7 @@ public class Dropper extends Machine {
 	private final TexturedModel oreModel;
 	private final Random random = new Random();
 	private final int spawnInterval;
-	private final int oreValue;
+	private final OreDefinition ore;
 	private int spawnTimer = 0;
 
 	public Dropper(
@@ -30,7 +31,7 @@ public class Dropper extends Machine {
 		super(model, position, rotY, definition);
 		this.oreModel = oreModel;
 		this.spawnInterval = definition.spawnInterval();
-		this.oreValue = definition.oreValue();
+		this.ore = definition.ore();
 	}
 
 	public void update(List<Ore> ores) {
@@ -54,6 +55,6 @@ public class Dropper extends Machine {
 
 		float randomSpin = random.nextFloat() * 360;
 
-		return new Ore(oreModel, position, 0, randomSpin, 0, Settings.TILE_SIZE, oreValue);
+		return new Ore(oreModel, position, 0, randomSpin, 0, Settings.TILE_SIZE, ore);
 	}
 }

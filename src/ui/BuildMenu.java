@@ -11,11 +11,11 @@ import renderEngine.DisplayManager;
 
 public class BuildMenu {
 
-	private static final float BUTTON_WIDTH = 150;
+	private static final float BUTTON_WIDTH = 140;
 	private static final float BUTTON_HEIGHT = 64;
 	private static final float GAP = 10;
 	private static final float BOTTOM_MARGIN = 16;
-	private static final float LABEL_SIZE = 20;
+	private static final float LABEL_SIZE = 17;
 	private static final float PRICE_SIZE = 18;
 
 	private static final Vector4f BUTTON_COLOUR = new Vector4f(0, 0, 0, 0.5f);

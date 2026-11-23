@@ -8,6 +8,7 @@ out vec4 out_Color;
 
 uniform sampler2D textureSampler;
 uniform vec3 lightColour;
+uniform vec3 tint; // (1, 1, 1) = no change
 
 void main(void) {
 
@@ -20,5 +21,5 @@ void main(void) {
 	float brightness = max(nDotl, 0.4);
 	vec3 diffuse = brightness * lightColour;
 
-	out_Color = vec4(diffuse, 1.0) * texture(textureSampler, pass_textureCoords);
+	out_Color = vec4(diffuse * tint, 1.0) * texture(textureSampler, pass_textureCoords);
 }
