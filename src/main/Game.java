@@ -14,9 +14,11 @@ import entities.Light;
 import entities.machine.Conveyor;
 import entities.machine.Dropper;
 import entities.machine.Furnace;
-import entities.machine.MachineType;
 import entities.ore.Ore;
 import input.MouseHandler;
+import items.Inventory;
+import items.ItemDefinition;
+import items.Items;
 import renderEngine.DisplayManager;
 import renderEngine.Loader;
 import renderEngine.Renderer;
@@ -26,6 +28,7 @@ import tile.MachineGrid;
 import tile.TileManager;
 import tile.TilePosition;
 import toolbox.MousePicker;
+import ui.BuildMenu;
 import ui.UIRenderer;
 
 public class Game {
@@ -41,7 +44,7 @@ public class Game {
 	private int money = 0;
 	private boolean debug = false;
 	private final boolean[] keyWasDown = new boolean[GLFW.GLFW_KEY_LAST + 1];
-	private MachineType selectedType = null;
+	private ItemDefinition selectedType = null;
 	private int currentRotation = 0;
 	private TilePosition hoveredTile = null;
 	private TilePosition selectedTile = null;
@@ -61,10 +64,12 @@ public class Game {
 	private final List<Furnace> furnaces = new ArrayList<>();
 	private final List<Ore> ores = new ArrayList<>();
 	private final MachineGrid machineGrid;
+	private final Inventory inventory;
 	private final MachinePlacer machinePlacer;
 	private final DebugRenderer debugRenderer;
 	private final MousePicker mousePicker;
 	private final TileHighlight tileHighlight;
+	private final BuildMenu buildMenu = new BuildMenu();
 
 	public Game() {
 		DisplayManager.createDisplay();
@@ -77,11 +82,13 @@ public class Game {
 
 		tileManager = new TileManager(loader, "map01");
 		machineGrid = new MachineGrid(tileManager.getCols(), tileManager.getRows());
+		inventory = new Inventory();
 		debugRenderer = new DebugRenderer(loader, tileManager.getCols(), tileManager.getRows());
 
 		Assets assets = new Assets(loader);
-		machinePlacer = new MachinePlacer(assets, machineGrid, droppers, conveyors, furnaces);
+		machinePlacer = new MachinePlacer(assets, machineGrid, inventory, droppers, conveyors, furnaces);
 		AssetSetter assetSetter = new AssetSetter();
+		assetSetter.setInventory(inventory);
 		assetSetter.setMachines(machinePlacer);
 
 		// Isometric camera: up and back from the start tile along -x/+z
@@ -123,8 +130,13 @@ public class Game {
 		handleHover();
 		
 		if (MouseHandler.wasLeftClicked()) {
+			ItemDefinition button = buildMenu.getButtonAt(MouseHandler.getX(), MouseHandler.getY());
 
-			if (hoveredTile == null) {
+			if (button != null) {
+				selectedType = button; // the menu gets the click, not the tile behind it
+				selectedTile = null;
+
+			} else if (hoveredTile == null) {
 				selectedTile = null; // clicked off the map
 
 			} else if (selectedType != null) {
@@ -141,15 +153,15 @@ public class Game {
 		// SELECT MACHINE BASED ON KEY (1 = Dropper)
 		if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_1) == GLFW.GLFW_PRESS) {
 			selectedTile = null;
-			selectedType = MachineType.DROPPER;
+			selectedType = Items.BASIC_DROPPER;
 
 		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_2) == GLFW.GLFW_PRESS) {
 			selectedTile = null;
-			selectedType = MachineType.CONVEYOR;
+			selectedType = Items.CONVEYOR;
 
 		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_3) == GLFW.GLFW_PRESS) {
 			selectedTile = null;
-			selectedType = MachineType.FURNACE;
+			selectedType = Items.FURNACE;
 
 		} else if (GLFW.glfwGetKey(DisplayManager.getWindow(), GLFW.GLFW_KEY_ESCAPE) == GLFW.GLFW_PRESS) {
 			selectedType = null;
@@ -172,6 +184,11 @@ public class Game {
 	}
 
 	private void handleHover() {
+		if (buildMenu.getButtonAt(MouseHandler.getX(), MouseHandler.getY()) != null) {
+			hoveredTile = null; // no tile highlight under the menu
+			return;
+		}
+
 		TilePosition tile = mousePicker.getTile(MouseHandler.getX(), MouseHandler.getY());
 		if (machineGrid.isInside(tile.col(), tile.row())) hoveredTile = tile;
 		else hoveredTile = null;
@@ -215,7 +232,10 @@ public class Game {
 	private void renderHighLight() {
 		if (selectedTile != null) tileHighlight.render(renderer.getProjectionMatrix(), camera, selectedTile.col(), selectedTile.row(), SELECTED_COLOUR);
 		if (selectedType == null || hoveredTile == null) return;
-		Vector4f color = machineGrid.isFree(hoveredTile.col(), hoveredTile.row()) ? CAN_PLACE : CANT_PLACE;
+		Vector4f color = 
+			machineGrid.isFree(hoveredTile.col(), hoveredTile.row()) && inventory.getCount(selectedType) > 0
+				? CAN_PLACE 
+				: CANT_PLACE;
 
 		tileHighlight.render(renderer.getProjectionMatrix(), camera, hoveredTile.col(), hoveredTile.row(), color);
 	}
@@ -227,6 +247,8 @@ public class Game {
 		String moneyText = "$" + money;
 		uiRenderer.drawRect(12, 12, uiRenderer.getTextWidth(moneyText, 32) + 24, 48, PANEL_COLOUR);
 		uiRenderer.drawText(moneyText, 24, 20, 32, MONEY_COLOUR);
+
+		buildMenu.render(uiRenderer, inventory, selectedType, MouseHandler.getX(), MouseHandler.getY());
 		uiRenderer.end();
 	}
 

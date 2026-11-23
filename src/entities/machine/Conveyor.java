@@ -2,22 +2,22 @@ package entities.machine;
 
 import org.joml.Vector3f;
 
-import entities.Entity;
-import main.Settings;
+import items.ConveyorDefinition;
 import models.TexturedModel;
 
-public class Conveyor extends Entity {
+public class Conveyor extends Machine {
 
-	private final float SPEED = 0.1F;
+	private final float speed;
 	private final int dirX;
 	private final int dirZ;
 
 	public Conveyor(
 		TexturedModel model, 
 		Vector3f position, 
-		float rotY
+		float rotY,
+		ConveyorDefinition definition
 	) {
-		super(model, position, 0, rotY, 0, Settings.TILE_SIZE);
+		super(model, position, rotY, definition);
 
 		// TURN THE ROTATION INTO 0, 1, 2, OR 3 QUATER TURNS
 		int quarterTurns = Math.floorMod(Math.round(rotY / 90f), 4);
@@ -28,10 +28,11 @@ public class Conveyor extends Entity {
 			case 2:  dirX = -1; dirZ =  0; break;  // 180 -> -x
 			default: dirX =  0; dirZ =  1; break;  // 270 -> +z
 		}
+		this.speed = definition.speed();
 	}
 	
 	public int getDirX() { return dirX; }
 	public int getDirZ() { return dirZ; }
-	public float getSpeed() { return SPEED; }
+	public float getSpeed() { return speed; }
 
 }

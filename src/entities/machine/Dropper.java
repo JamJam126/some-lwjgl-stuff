@@ -5,33 +5,37 @@ import java.util.Random;
 
 import org.joml.Vector3f;
 
-import entities.Entity;
 import entities.ore.Ore;
+import items.DropperDefinition;
 import main.Settings;
 import models.TexturedModel;
 
-public class Dropper extends Entity {
+public class Dropper extends Machine {
 
-	private static final int SPAWN_INTERVAL = 120;
 	private static final float CHUTE_END = 0.64f;
 
 	private final TexturedModel oreModel;
 	private final Random random = new Random();
+	private final int spawnInterval;
+	private final int oreValue;
 	private int spawnTimer = 0;
 
 	public Dropper(
 		TexturedModel model,
 		TexturedModel oreModel,
 		Vector3f position,
-		float rotY
+		float rotY,
+		DropperDefinition definition
 	) {
-		super(model, position, 0, rotY, 0, Settings.TILE_SIZE);
+		super(model, position, rotY, definition);
 		this.oreModel = oreModel;
+		this.spawnInterval = definition.spawnInterval();
+		this.oreValue = definition.oreValue();
 	}
 
 	public void update(List<Ore> ores) {
 		spawnTimer++;
-		if (spawnTimer >= SPAWN_INTERVAL) {
+		if (spawnTimer >= spawnInterval) {
 			spawnTimer = 0;
 			ores.add(spawnOre());
 		}
@@ -49,6 +53,7 @@ public class Dropper extends Entity {
 		);
 
 		float randomSpin = random.nextFloat() * 360;
-		return new Ore(oreModel, position, 0, randomSpin, 0, Settings.TILE_SIZE);
+
+		return new Ore(oreModel, position, 0, randomSpin, 0, Settings.TILE_SIZE, oreValue);
 	}
 }

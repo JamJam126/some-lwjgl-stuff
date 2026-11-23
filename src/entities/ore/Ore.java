@@ -8,7 +8,7 @@ import models.TexturedModel;
 import tile.MachineGrid;
 
 public class Ore extends Entity {
-	private final int value = 10;
+	private final int value;
 
 	public Ore(
 		TexturedModel model, 
@@ -16,9 +16,11 @@ public class Ore extends Entity {
 		float rotX, 
 		float rotY, 
 		float rotZ, 
-		float scale
+		float scale,
+		int value
 	) {
 		super(model, position, rotX, rotY, rotZ, scale);
+		this.value = value;
 	}
 	
 	public void update(MachineGrid grid) {
